@@ -1,0 +1,51 @@
+import fastapi
+from mockdata import details
+from dto import Product
+
+f=fastapi.FastAPI()
+@f.get("/")
+def home():
+    return "Hello welcome to fast api!"
+
+@f.get("/about")
+def about():
+    return "This is a simple FastAPI application."
+
+@f.get("/details")
+def get_details():
+    return details
+
+@f.get("/detail/{item_id}")
+def get_item_by_id(item_id: int):
+    for i in details:
+        if i.get("id")==item_id:
+            return i
+    return {"error": "Item not found"}
+
+@f.get("/query")
+def query_item(request: fastapi.Request):
+    qp = request.query_params
+    return f"Hello {qp.get('name')} whose {qp.get('age')} years old, welcome to FastAPI!"
+
+@f.post("/create_product")
+def create_product(body: Product):
+    body_dict=body.model_dump()
+    details.append(body_dict)
+    return {"message": "Product created successfully!","data":body_dict}
+
+@f.put("/update_product/{item_id}")
+def update_product(body: Product,item_id:int):
+
+    for i,one in enumerate(details):
+        if one.get("id")==item_id:
+            details[i]=body.model_dump()
+            return {"message": "Product updated successfully!","data":body.model_dump()}
+    return {"error": "Item not found"}
+
+@f.delete("/delete_product/{item_id}")
+def delete_product(item_id:int):
+    for i,one in enumerate(details):
+        if one.get("id")==item_id:
+            details.pop(i)
+            return {"message": "Product deleted successfully!"}
+    return {"error": "Item not found"}
